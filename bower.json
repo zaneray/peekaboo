@@ -1,0 +1,8 @@
+{
+  "name": "peekaboo",
+  "version": "v1.0.0",
+  "main": "js/peekaboo.js",
+  "dependencies": {
+      "jquery": ">=1.10.2"
+  }
+}
