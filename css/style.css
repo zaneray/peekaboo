@@ -114,3 +114,10 @@ body {
   opacity: .7;
   background-color: white; 
 }
+.peekaboo-notransition{  
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}

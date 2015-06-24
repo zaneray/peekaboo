@@ -10,7 +10,8 @@
       sliderDirection : "next",
       stopOnInteraction : true,
       stopAfterDuration : 30000,
-      animationDuration : 300      
+      animationDuration : 300,
+      startPositionNonCircular : 0
       
     }, options); 
   
@@ -22,31 +23,78 @@
         $pagingGoToPrev = $(this).find('.js-peekaboo-pager-prev'),
         $pagingGoToNext = $(this).find('.js-peekaboo-pager-next'),
         originalNumSlides = $(this).find('.js-peekaboo-slide').length; 
-                        
+     
+
+    /* init()
+     * 
+     * The main init function.
+     * Here we consume all the settings and set things in motion.
+     */
     peekABoo.init = function(){
       
       if ($slides.length > 1){
       
+        // initialize for circular slideshow
         if (settings.circularSlider == true){
           peekABoo.makeCircular();
           peekABoo.bindPagerPrevNextClicksCircular();
-          peekABoo.bindPagerDotClicksCircular();        
+          peekABoo.bindPagerDotClicksCircular();    //TODO make this work   
+
+          peekABoo.startSlideIndex = 2; 
+          
+        // initialize for non-circular slideshow
         } else {
+          
+          if (typeof settings.startPositionNonCircular !== 'undefined'){
+            peekABoo.startSlideIndex = settings.startPositionNonCircular; 
+          } else {
+            peekABoo.startSlideIndex = 0; 
+          }
+          
+          peekABoo.makeNonCircular(peekABoo.startSlideIndex); 
+          peekABoo.updatePrevNextClickRegions(); 
           peekABoo.bindPagerPrevNextClicks();
           peekABoo.bindPagerDotClicks(); 
         }      
         
+        // autostart
         if (settings.autostartSlider == true){
           peekABoo.autoStart(settings.sliderInterval, settings.sliderDirection, settings.stopOnInteraction, settings.stopAfterDuration)  
-      }  
+        }  
 
+        
+        // Attach mouse and touch events for swipe / drag   
+        $slideBody.on('mousedown touchstart', function(e){      
+
+          peekABoo.startTime = new Date().getTime();
+                          
+          if (e.type == 'mousedown'){
+            peekABoo.dragStartMousePosX = peekABoo.getMousePos(e).posx;
+          }
+          
+          if (e.type == 'touchstart'){
+            peekABoo.dragStartMousePosX = e.originalEvent.touches[0].pageX;
+          }
+
+          // For circular slider, we can slide infinitely in either direction
+          if (settings.circularSlider == true){
+            peekABoo.dragStartCircular(e);
+            
+          // For non-circular slide, we have to manage the left and right ends of the gallery and unbind the swipe events
+          } else {
+            peekABoo.dragStart(e);  
+          }        
+
+        });          
+        
+        
+      // don't init much if there is only one image in the gallery
       } else {
-
-        peekaboo.setupSingleImageGallery();
-      
-      }      
+        peekABoo.setupSingleImageGallery();      
+      }          
       
     };
+    
     
     /**
      * makeCircular()       
@@ -73,11 +121,43 @@
     
     };
 
+    
+    /**
+     * makeNonCircular()
+     *
+     * For a non-circular slider, we dont have to append/prepend any extra slides, but we 
+     * can use "startSlideIndex" to specify where the slideshow should start.  
+     * For example, startSlideIndex=1 would make it so that the slideshow starts on the
+     * second slide, with the second pagination dot active, giving the appearance that 
+     * there are peekaboo slides before and after the starting slide.
+     *
+     */     
+    peekABoo.makeNonCircular = function(startSlideIndex){      
+      $(peekABoo).find('.js-peekaboo-slide').eq(startSlideIndex).addClass('active');            
+      
+      $slideBody.css({     
+        '-webkit-transform': 'translate3d(' + startSlideIndex * 100 + '%, 0, 0)',
+        '-ms-transform': 'translate3d(' + startSlideIndex * 100 + '%, 0, 0)',
+        'transform': 'translate3d(' + startSlideIndex * 100 + '%, 0, 0)'
+      });
+      
+    }; 
+    
+    
+    /**
+     * autoStart()
+     *
+     * if specified in the settings (autostart = true), click through the gallery at a specified
+     * interval.  we accomplish this by triggering clicks on the 'prev' and 'next' clickable elements.
+     * autoplay direction is specified in settings as "prev" or "next"
+     * if specified in the settings, we can disable the autoplay after "stopAfterDuration" milliseconds
+     * if specified in the settings, we can disable autoplay after a user interacts w/ the gallery.
+     */
     peekABoo.autoStart = function(sliderInterval, sliderDirection, stopOnInteraction, stopAfterDuration){
 
       // loop through slides at rate defined by 'sliderInterval'
       var autoplay = setInterval(function(){
-        
+                
         if (typeof sliderDirection == 'undefined' || sliderDirection == 'next'){
           $pagingGoToNext.trigger("click");   
         } else if (typeof sliderDirection !== 'undefined' && sliderDirection == 'prev'){
@@ -88,7 +168,7 @@
       
       // if 'stopOnInteraction' == true, stop the autoplay loop on interaction w/ the gallery
       if (typeof stopOnInteraction !== 'undefined' && stopOnInteraction == true){      
-        $(peekABoo).find('.js-peekaboo-container').on('click', function(e){
+        $(peekABoo).find('.js-peekaboo-container').on('click touchstart', function(e){
           
           e.stopPropagation();
           e.preventDefault(); 
@@ -111,17 +191,18 @@
     
     }; 
     
+    
     /**
      * setupSingleImageGallery()       
      * 
      * If we only have one image in the gallery, make the prev/next regions inactive (not clickable)
-     * and make sure translation is set to 0%
+     * and make sure translation is set to 0%         
      */
     peekABoo.setupSingleImageGallery = function(){
-      $('.js-peekaboo-slide').eq(0).addClass('active'); 
+      $(peekABoo).find('.js-peekaboo-slide').eq(0).addClass('active'); 
       $pagingGoToPrev.removeClass('active');
       $pagingGoToNext.removeClass('active');
-      
+            
       $slideBody.css({
         '-webkit-transition': 'initial',
         'transition': 'initial',     
@@ -133,21 +214,25 @@
     
     
     peekABoo.bindPagerDotClicksCircular = function(){
-      
+       //TODO  make these work for circular galleries
+       /*  in general, for circular galleries, we need to figure out whether to move left or 
+           right to get to the target image.  because there are exactly two of each image in
+           the gallery, the best way to do this is probably to compute which of the two is 
+           "closest" and move to that one.  There may be other special considerations for 
+           galleries with two images. */
     }; 
+    
     
     /**
      * bindPagerDotClicks()    
      * 
-     *  TODO - make these work for circular gallery or hide them
-     * 
      * bind interactions to the pagination dots.  This method inspects any clicked pager dot
      * to find the target "page number", and then passes that to adjustImageGridRightLeftSlidePos().    
      */
-    peekABoo.bindPagerDotClicks = function(){
+    peekABoo.bindPagerDotClicks = function(){      
       
       $pagingDots.on('click', function(e){
-                  
+                                    
         if ( !$(this).hasClass('active') ){  
         
           // momentarily set all paging dots and slides inactive
@@ -172,7 +257,7 @@
             }  
             
             // make sure prev/next regions are set to clickable if necessary
-            p.updatePrevNextClickRegions();
+            peekABoo.updatePrevNextClickRegions();
           },300);        
           
         } 
@@ -180,16 +265,23 @@
       }); 
     };
     
+    
     /**
      * adjustImageGridRightLeftSlidePos()
      *  
      * Input:  numSlides - (required) - slide the slides to the left or right by numSlides
+     *
+     * Note: this method is used for circular and non-circular galleries.  
+     * Note: the left offset is computed using the "startSlideIndex" to know where the "first" slide
+     *       sits.  For example, with a circular gallery, after we clone and then append/prepend
+     *       slides, we have to offset the gallery by -200% to make the "first" slide visible.  We 
+     *       keep track of that -200% throughout the gallery.  
      */
     peekABoo.adjustImageGridRightLeftSlidePos = function(numSlides){
       var columnWidth = $slideWindow.width(),
           totalSlideWidth = columnWidth * numSlides;        
           
-      $totalSlideWidthPercent = ((totalSlideWidth / $slideWindow.width()) * 100) + 200;
+      $totalSlideWidthPercent = ((totalSlideWidth / $slideWindow.width()) * 100) + (100 * peekABoo.startSlideIndex);
         
       var totalSlideTransformPercent = 'translate3d(' + ($totalSlideWidthPercent * -1) + '%, 0, 0)'; 
              
@@ -200,6 +292,7 @@
       });
     };
     
+    
     /**
      * adjustImageGridOnePosition()
      *  
@@ -209,6 +302,7 @@
      * css transform on the slideBody.
      */
     peekABoo.adjustImageGridOnePosition = function(){
+            
       var initialTransition = $slideBody.css('transition');
     
       $slideBody.css({
@@ -226,6 +320,7 @@
         }); 
       }, settings.animationDuration);
     }; 
+    
     
     /**
      * loadPeekingSlides()
@@ -246,21 +341,24 @@
      *  inputs:  direction - (required) - should be set to 'prev' or 'next' 
      */
     peekABoo.loadPeekingSlides = function(direction){
-      if ( direction == 'prev' ){
-      
+      if ( direction == 'prev' ){      
         var $lastSlide = $(peekABoo).find('.js-peekaboo-slide').last().clone();
-        $slideBody.prepend($lastSlide); 
-        
+        $slideBody.prepend($lastSlide);         
       }
           
-      if ( direction == 'next' ) {
-        
+      if ( direction == 'next' ) {        
         var $firstSlide = $(peekABoo).find('.js-peekaboo-slide').eq(0).clone();      
-        $slideBody.append($firstSlide); 
-        
+        $slideBody.append($firstSlide);         
       }      
     }; 
     
+    
+    /**
+     * killWrappingSlides()
+     *
+     * used after a circular slide transition to make sure we crop the extra slide added to the
+     * beginning or end of the gallery off to get us back to the correct number of slides.     
+     */     
     peekABoo.killWrappingSlides = function(direction){
       if (direction == 'prev'){
         $(peekABoo).find('.js-peekaboo-slide').last().remove();
@@ -269,6 +367,7 @@
         $(peekABoo).find('.js-peekaboo-slide').eq(0).remove(); 
       }
     }; 
+    
     
     /**
      * updatePrevNextClickRegions()
@@ -292,6 +391,7 @@
       }
     };
     
+    
     /**
      * bindPagerPrevNextClicks()
      * 
@@ -301,24 +401,25 @@
      */ 
     peekABoo.bindPagerPrevNextClicks = function(){
       $pagingGoToPrev.on('click', function(e){      
-      
+            
         if ( $(this).hasClass('active') ){
         
           var activeDotNum = $(peekABoo).find('.js-peekaboo-paging-dot.active').attr('data-slide-to'),
               newDotNum = activeDotNum - 1,        
               previousDot = $(peekABoo).find('[data-slide-to=' + newDotNum + ']');       
-                
+                      
           previousDot.trigger('click'); 
         }
       }); 
       
-      $pagingGoToNext.on('click', function(e){
+      $pagingGoToNext.on('click touchstart', function(e){
+               
             
-        if ( $(this).hasClass('active') ){
+        if ( $(this).hasClass('active') ){          
         
           var activeDotNum = $(peekABoo).find('.js-peekaboo-paging-dot.active').attr('data-slide-to'),
               newDotNum = parseInt(activeDotNum) + 1,         
-              nextDot = $(peekABoo).find('[data-slide-to=' + newDotNum + ']');  
+              nextDot = $(peekABoo).find('[data-slide-to=' + newDotNum + ']'); 
                   
           nextDot.trigger('click'); 
         }
@@ -401,6 +502,250 @@
       }, settings.animationDuration);  
     }; 
     
+        
+    /** 
+     *  Image Grid swipe / touch interactions
+     * 
+     * the functions below are used for the mobile / touch interactions with the image grid 
+     * pagination.  
+     */
+     
+    /* Start logic for swipe */
+    peekABoo.dragStart = function(e){
+        
+      peekABoo.fastSwipeTimerStart= new Date().getTime();
+        
+      if (e.type == 'mousedown'){
+        $(document).on('mousemove.swipe', function(e){
+          peekABoo.dragMove(e);
+        });
+        $(document).on('mouseup.swipe', function(e){        
+          peekABoo.dragEnd(e);
+        });
+      }
+
+      if (e.type == 'touchstart'){
+        peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
+        $slideBody.on('touchmove', function(e){
+          peekABoo.dragMove(e);
+        });
+      
+        $slideBody.on('touchend', function(e){        
+          peekABoo.dragEnd(e);
+        });
+      }
+
+      return false;
+      
+    };
+    peekABoo.dragStartCircular = function(e){
+        
+      peekABoo.fastSwipeTimerStart= new Date().getTime();
+        
+      if (e.type == 'mousedown'){
+        $(document).on('mousemove.swipe', function(e){
+          peekABoo.dragMoveCircular(e);
+        });
+        $(document).on('mouseup.swipe', function(e){        
+          peekABoo.dragEndCircular(e);
+        });
+      }
+
+      if (e.type == 'touchstart'){
+        peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
+        $slideBody.on('touchmove', function(e){
+          peekABoo.dragMoveCircular(e);
+        });
+      
+        $slideBody.on('touchend', function(e){        
+          peekABoo.dragEndCircular(e);
+        });
+      }
+
+      return false;
+      
+    };
+      
+    peekABoo.getMousePos = function(e){
+      var posx,
+          posy;
+          
+      if (!e) var e = window.event;
+      if (e.pageX || e.pageY)   {
+        posx = e.pageX;
+        posy = e.pageY;
+      }
+      else if (e.clientX || e.clientY)  {
+        posx = e.clientX + document.body.scrollLeft
+        + document.documentElement.scrollLeft;
+        posy = e.clientY + document.body.scrollTop
+        + document.documentElement.scrollTop;
+      }
+      return {
+        'posx': posx,
+        'posy': posy
+      };  
+    };
+      
+    peekABoo.dragMove = function(e){
+
+      // remove transition effect 
+      $slideBody.addClass('peekaboo-notransition');
+
+      peekABoo.fastSwipeTimerEnd = new Date().getTime();
+
+      if (e.type == 'mousemove'){
+        dragDistanceX = peekABoo.dragStartMousePosX - peekABoo.getMousePos(e).posx;
+      }
+
+      if (e.type == 'touchmove'){
+        dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
+        peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
+
+        dragDistanceY = peekABoo.dragStartMousePosY - e.originalEvent.touches[0].pageY;
+        window.scrollBy(0,dragDistanceY);   
+      }
+
+      // % / pixel
+      var pixelPercentValue = 100 / $slideWindow.width(),
+          moveByPercent = dragDistanceX * pixelPercentValue;
+      
+      if (peekABoo.totalSlideWidthPercent === undefined){
+        peekABoo.totalSlideWidthPercent = 0;
+      }
+
+      // current % position
+      peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent;
+
+      // disable further left
+      if (peekABoo.moveByPercentTotal >= 0){
+        return false;
+      }
+
+      var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal - 200 + '%, 0, 0)';    
+      
+      $slideBody.css({
+        '-webkit-transform': totalSlideTransformPercent,
+        '-ms-transform': totalSlideTransformPercent,
+        'transform': totalSlideTransformPercent
+        }
+      );
+      
+      return false;
+    };
+    
+    peekABoo.dragMoveCircular = function(e){
+      // remove transition effect 
+      $slideBody.addClass('peekaboo-notransition');
+
+      peekABoo.fastSwipeTimerEnd = new Date().getTime();
+
+      if (e.type == 'mousemove'){
+        dragDistanceX = peekABoo.dragStartMousePosX - peekABoo.getMousePos(e).posx;
+      }
+
+      if (e.type == 'touchmove'){
+        dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
+        peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
+
+        dragDistanceY = peekABoo.dragStartMousePosY - e.originalEvent.touches[0].pageY;
+        window.scrollBy(0,dragDistanceY);   
+      }
+
+      // % / pixel
+      var pixelPercentValue = 100 / $slideWindow.width(),
+          moveByPercent = dragDistanceX * pixelPercentValue;
+      
+      if (peekABoo.totalSlideWidthPercent === undefined){
+        peekABoo.totalSlideWidthPercent = 0;
+      }
+
+      // current % position
+      peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent - 200;
+      
+      var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal + '%, 0, 0)';            
+      
+      $slideBody.css({
+        '-webkit-transform': totalSlideTransformPercent,
+        '-ms-transform': totalSlideTransformPercent,
+        'transform': totalSlideTransformPercent
+        }
+      );
+      
+      return false;
+    };
+      
+    peekABoo.dragEnd = function(e){
+
+      $(document).off('mousemove.swipe');
+      $(document).off('mouseup.swipe');
+      
+      $slideBody.off('touchmove');
+      $slideBody.off('touchend');
+      
+      $slideBody.removeClass('peekaboo-notransition'); 
+
+      if (e.type == 'mouseup'){
+        peekABoo.mouseUpEndX = peekABoo.getMousePos(e).posx;
+      }
+
+      peekABoo.swipeSlide();     
+
+    };
+    peekABoo.dragEndCircular = function(e){
+      $(document).off('mousemove.swipe');
+      $(document).off('mouseup.swipe');
+      
+      $slideBody.off('touchmove');
+      $slideBody.off('touchend');
+      
+      $slideBody.removeClass('peekaboo-notransition'); 
+
+      if (e.type == 'mouseup'){
+        peekABoo.mouseUpEndX = peekABoo.getMousePos(e).posx;
+      }
+
+      peekABoo.swipeSlide(); 
+    }; 
+
+    peekABoo.slideToStart = function(){
+            
+      var totalSlideTransformPercent = 'translate3d(' + peekABoo.totalSlideWidthPercent * -1 - 200 + '%, 0, 0)';    
+
+      $slideBody.css({
+        '-webkit-transform': totalSlideTransformPercent,
+        '-ms-transform': totalSlideTransformPercent,
+        'transform': totalSlideTransformPercent
+        }
+      );      
+
+    };
+      
+    peekABoo.swipeSlide = function(){
+
+      peekABoo.endTime = new Date().getTime();
+    
+      if (peekABoo.endTime - peekABoo.startTime < 150) {      
+        return false;
+      }
+
+      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 100){
+        $pagingGoToNext.trigger('click');
+        return false;
+      }
+
+      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 100){
+        $pagingGoToPrev.trigger('click');
+        return false;
+      }
+
+      peekABoo.slideToStart();
+
+    } ;
+    /** 
+     * END - Image Grid swipe / touch interactions 
+     */
+        
     
     /* Initialize the Plugin */
     peekABoo.init(); 

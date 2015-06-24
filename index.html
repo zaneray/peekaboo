@@ -41,18 +41,18 @@
                         </ul>     
 			        </div>
 			    </div>      
-	        </div>
+	    </div>
   
-            <div class="peekaboo-parent peekaboo-parent-2" data-peekaboo-parent-2>
-    
-    			<div class="js-peekaboo-container peekaboo-container container">			  
-    			  
-                    <div class="peekaboo-window js-peekaboo-window">
-                        
-                        <!-- clickable faded prev/next regions -->
-                        <div class="js-peekaboo-pager-prev peekaboo-pager-prev peekaboo-pager active"></div>
-                        <div class="js-peekaboo-pager-next peekaboo-pager-next peekaboo-pager active "></div>         
-                        
+      <div class="peekaboo-parent" data-peekaboo-2>
+
+			     <div class="js-peekaboo-container peekaboo-container container">			  
+			  
+                <div class="peekaboo-window js-peekaboo-window">
+            
+                    <!-- clickable faded prev/next regions -->
+                    <div class="js-peekaboo-pager-prev peekaboo-pager-prev peekaboo-pager active"></div>
+                    <div class="js-peekaboo-pager-next peekaboo-pager-next peekaboo-pager active"></div>         
+            
                         <!-- this is the actual image slider.  construct your images here.  -->
                         <div class="js-peekaboo-slide-body peekaboo-slide-body">        
                             <span class="js-peekaboo-slide peekaboo-slide" data-slide-to="0">
@@ -68,23 +68,24 @@
                                 <img src="images/FPO-slide2.jpg"/>
                             </span>         
                         </div>     
-            
+
                         <!-- optional paging dots -->
                         <ul class="js-peekaboo-paging-dots peekaboo-paging-dots">
-                          <li class="js-peekaboo-paging-dot peekaboo-paging-dot active" data-slide-to="0">&deg;</li>
-                          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="1">&deg;</li>
-                          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="2">&deg;</li>
-                          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="3">&deg;</li>       
-                        </ul>            
-              
-    			    </div>
-    			</div>      
-    	    </div>
+                            <li class="js-peekaboo-paging-dot peekaboo-paging-dot active" data-slide-to="0">&deg;</li>
+                            <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="1">&deg;</li>
+                            <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="2">&deg;</li>
+                            <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="3">&deg;</li>       
+                        </ul>     
+			        </div>
+			    </div>      
+	    </div>         
+    	    
 
     	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     	<script type="text/javascript" src="js/script.js"></script>
     	<script type="text/javascript">
             $(document).ready(function(){
+                
                 
                 $('[data-peekaboo-parent]').peekABoo({
                     circularSlider : true,
@@ -94,13 +95,13 @@
                     stopOnInteraction : true,
                     stopAfterDuration : 30000,
                     animationDuration : 300      
-                }); 
+                });                 
                 
-                $('[data-peekaboo-parent-2]').peekABoo({
-                    circularSlider : true,
+                $('[data-peekaboo-2]').peekABoo({
+                    circularSlider : false,
                     autostartSlider : true,      
                     sliderInterval : 2000,
-                    sliderDirection : "prev",
+                    sliderDirection : "next",
                     stopOnInteraction : true,
                     stopAfterDuration : 30000,
                     animationDuration : 300      
