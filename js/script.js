@@ -169,10 +169,7 @@
       // if 'stopOnInteraction' == true, stop the autoplay loop on interaction w/ the gallery
       if (typeof stopOnInteraction !== 'undefined' && stopOnInteraction == true){      
         $(peekABoo).find('.js-peekaboo-container').on('click touchstart', function(e){
-          
-          e.stopPropagation();
-          e.preventDefault(); 
-          
+                    
           // watch for real human interaction, and stop the slider.
           if (e.hasOwnProperty('originalEvent')){           
             clearInterval(autoplay);   
@@ -534,8 +531,6 @@
           peekABoo.dragEnd(e);
         });
       }
-
-      return false;
       
     };
     peekABoo.dragStartCircular = function(e){
@@ -561,8 +556,6 @@
           peekABoo.dragEndCircular(e);
         });
       }
-
-      return false;
       
     };
       
@@ -631,7 +624,6 @@
         }
       );
       
-      return false;
     };
     
     peekABoo.dragMoveCircular = function(e){
@@ -672,7 +664,6 @@
         }
       );
       
-      return false;
     };
       
     peekABoo.dragEnd = function(e){
