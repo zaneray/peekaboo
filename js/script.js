@@ -22,7 +22,8 @@
         $pagingDots = $(this).find('.js-peekaboo-paging-dot'),
         $pagingGoToPrev = $(this).find('.js-peekaboo-pager-prev'),
         $pagingGoToNext = $(this).find('.js-peekaboo-pager-next'),
-        originalNumSlides = $(this).find('.js-peekaboo-slide').length; 
+        originalNumSlides = $(this).find('.js-peekaboo-slide').length,
+        originalTransitionCSS = $(this).find('.js-peekaboo-slide-body').css('transition'); 
      
 
     /* init()
@@ -32,7 +33,7 @@
      */
     peekABoo.init = function(){
       
-      if ($slides.length > 1){
+      if ($slides.length > 1){      
       
         // initialize for circular slideshow
         if (settings.circularSlider == true){
@@ -211,12 +212,61 @@
     
     
     peekABoo.bindPagerDotClicksCircular = function(){
-       //TODO  make these work for circular galleries
-       /*  in general, for circular galleries, we need to figure out whether to move left or 
-           right to get to the target image.  because there are exactly two of each image in
-           the gallery, the best way to do this is probably to compute which of the two is 
-           "closest" and move to that one.  There may be other special considerations for 
-           galleries with two images. */
+           
+      $pagingDots.on('click', function(e){
+
+        if ( !$(this).hasClass('active') ){
+          
+          // momentarily set all paging dots and slides inactive
+          
+          var activeSlideDotIndex = $(peekABoo).find('.js-peekaboo-paging-dot.active').attr('data-slide-to'),
+              targetSlideDotIndex = $(this).attr('data-slide-to'),
+              $candidateSlides = $(peekABoo).find('.js-peekaboo-slide[data-slide-to=' + targetSlideDotIndex + ']'),
+              activePosition = $(peekABoo).find('.js-peekaboo-slide.active').index(),              
+              numSlides = 9999999,
+              finalPosition = -1; 
+                      
+          $pagingDots.removeClass('active');      
+          $(peekABoo).find('.js-peekaboo-slide').removeClass('active');  
+            
+          $.each ( $candidateSlides, function(index) {
+            
+            var candidatePosition = $(this).index(),                
+                positionDelta = candidatePosition - activePosition;                 
+                
+            if ( Math.abs(positionDelta) < Math.abs(numSlides) && candidatePosition != 0 && candidatePosition != ($('.js-peekaboo-slide').length - 1) ){
+              numSlides = positionDelta; 
+              finalPosition = candidatePosition;
+            }                
+            
+          });           
+          
+          $(this).addClass('active');    
+          
+          peekABoo.adjustImageGridRightLeftSlidePos(numSlides); 
+                     
+          if (numSlides > 0){
+            var direction = 'next';
+          } else if (numSlides < 0){
+            var direction = 'prev';
+          }
+          
+          var t = setTimeout(function(){
+          
+            for (i = 0; i < Math.abs(numSlides); i++){
+              peekABoo.loadPeekingSlides(direction);      
+              peekABoo.adjustImageGridOnePosition(direction);            
+              peekABoo.killWrappingSlides(direction);               
+            }
+            
+            $(peekABoo).find('.js-peekaboo-slide[data-slide-to=' + targetSlideDotIndex + ']').eq(0).addClass('active'); 
+          
+          }, settings.animationDuration );  
+          
+          
+        }
+
+      });      
     }; 
     
     
@@ -250,12 +300,12 @@
             for ( var i = numSlides; i < (parseInt(numSlides) + 1); i++){
                           
               $slides.eq(i).addClass('active');  
-              peekABoo.loadPeekingSlides();             
+              
             }  
             
             // make sure prev/next regions are set to clickable if necessary
             peekABoo.updatePrevNextClickRegions();
-          },300);        
+          }, settings.animationDuration);        
           
         } 
         
@@ -277,16 +327,17 @@
     peekABoo.adjustImageGridRightLeftSlidePos = function(numSlides){
       var columnWidth = $slideWindow.width(),
           totalSlideWidth = columnWidth * numSlides;        
-          
+                    
       $totalSlideWidthPercent = ((totalSlideWidth / $slideWindow.width()) * 100) + (100 * peekABoo.startSlideIndex);
         
       var totalSlideTransformPercent = 'translate3d(' + ($totalSlideWidthPercent * -1) + '%, 0, 0)'; 
-             
+                   
       $slideBody.css({
         '-webkit-transform': totalSlideTransformPercent,
         '-ms-transform': totalSlideTransformPercent,
         'transform': totalSlideTransformPercent
-      });
+      });      
+      
     };
     
     
@@ -299,9 +350,7 @@
      * css transform on the slideBody.
      */
     peekABoo.adjustImageGridOnePosition = function(){
-            
-      var initialTransition = $slideBody.css('transition');
-    
+          
       $slideBody.css({
         '-webkit-transition': 'initial',
         'transition': 'initial',     
@@ -312,9 +361,10 @@
       
       setTimeout(function(){      
         $slideBody.css({
-          '-webkit-transition': initialTransition,
-          'transition': initialTransition
+          '-webkit-transition': originalTransitionCSS,
+          'transition': originalTransitionCSS
         }); 
+                
       }, settings.animationDuration);
     }; 
     
@@ -459,7 +509,7 @@
     /**
      * postMotionUpdateActiveSlide()
      * 
-     * after we have moved the slides horizontally, make sure we set the correct slide and
+     * after we have moved the slides horizontally one position, make sure we set the correct slide and
      * the correct pagination dot to active.
      */
     peekABoo.postMotionUpdateActiveSlide = function(direction){
