@@ -201,6 +201,10 @@
       $pagingGoToPrev.removeClass('active');
       $pagingGoToNext.removeClass('active');
             
+      $pagingGoToNext.remove();
+      $pagingGoToPrev.remove();
+      $pagingDots.remove();      
+            
       $slideBody.css({
         '-webkit-transition': 'initial',
         'transition': 'initial',     
