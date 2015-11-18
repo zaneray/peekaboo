@@ -45,8 +45,8 @@ body {
 .peekaboo-slide-body{
   -webkit-transition: all 0.3s ease-in;
   transition: all 0.3s ease-in;
-  -webkit-transform: translate3d(-200%, 0, 0);
-  transform: translate3d(-200%, 0, 0);  
+  -webkit-transform: translate3d(0%, 0, 0);
+  transform: translate3d(0%, 0, 0);  
 }
 @media only screen and (max-width: 768px) {
   .peekaboo-slide-body {
