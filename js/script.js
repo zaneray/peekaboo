@@ -37,11 +37,12 @@
       
         // initialize for circular slideshow
         if (settings.circularSlider == true){
+          
+          peekABoo.startSlideIndex = 2; 
+          
           peekABoo.makeCircular();
           peekABoo.bindPagerPrevNextClicksCircular();
-          peekABoo.bindPagerDotClicksCircular();    //TODO make this work   
-
-          peekABoo.startSlideIndex = 2; 
+          peekABoo.bindPagerDotClicksCircular();       
           
         // initialize for non-circular slideshow
         } else {
@@ -119,6 +120,20 @@
       $slideBody.prepend($slideToMove);
       
       $(peekABoo).find('.js-peekaboo-slide').eq(2).addClass('active'); 
+      
+      $slideBody.css({
+        '-webkit-transition': 'initial',
+        'transition': 'initial',   
+      }); 
+      
+      setTimeout(function(){      
+        $slideBody.css({
+          '-webkit-transition': originalTransitionCSS,
+          'transition': originalTransitionCSS
+        });                 
+      }, settings.animationDuration);
+            
+      peekABoo.adjustImageGridRightLeftSlidePos(0);
     
     };
 
@@ -795,6 +810,6 @@
     /* Initialize the Plugin */
     peekABoo.init(); 
   
-  }  
+  };
 
 }(jQuery)); 
