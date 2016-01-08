@@ -36,10 +36,9 @@
 			<!-- optional paging dots -->
 			<%--
       <ul class="js-peekaboo-paging-dots peekaboo-paging-dots">
-          <li class="js-peekaboo-paging-dot peekaboo-paging-dot active" data-slide-to="0">&deg;</li>
-          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="1">&deg;</li>
-          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="2">&deg;</li>
-          <li class="js-peekaboo-paging-dot peekaboo-paging-dot" data-slide-to="3">&deg;</li>       
+        <c:forEach begin="0" end="${pagingCount-1}" step="1" varStatus="pageStatus">
+          <li class="js-peekaboo-paging-dot peekaboo-paging-dot ${pageStatus.index == 0 ? 'active' : ''}" data-slide-to="${pageStatus.index}">&deg;</li>
+        </c:forEach>
       </ul>     
        --%>
 		</div>
