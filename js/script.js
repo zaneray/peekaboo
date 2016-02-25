@@ -785,16 +785,16 @@
 
       peekABoo.endTime = new Date().getTime();
     
-      if (peekABoo.endTime - peekABoo.startTime < 150) {      
+      if (peekABoo.endTime - peekABoo.startTime < 50) {      
         return false;
       }
 
-      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 100){
+      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 20){
         $pagingGoToNext.trigger('click');
         return false;
       }
 
-      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 100){
+      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 20){
         $pagingGoToPrev.trigger('click');
         return false;
       }
