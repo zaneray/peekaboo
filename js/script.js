@@ -789,12 +789,12 @@
         return false;
       }
 
-      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 20){
+      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 8){
         $pagingGoToNext.trigger('click');
         return false;
       }
 
-      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 20){
+      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 8){
         $pagingGoToPrev.trigger('click');
         return false;
       }
