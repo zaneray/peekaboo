@@ -617,24 +617,8 @@
      
     /* Start logic for swipe */
     peekABoo.dragStart = function(e){          
-        
-      if (e.type == 'mousedown'){
-        
-        peekABoo.fastSwipeTimerStart= new Date().getTime();
-        
-        $(document).on('mousemove.swipe', function(e){
-                    
-          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
-            return;
-          }
-          peekABoo.dragMove(e);
-        });
-        $(document).on('mouseup.swipe', function(e){        
-          peekABoo.dragEnd(e);
-        });
-      }
-
-      else if (e.type == 'touchstart'){
+              
+      if (e.type == 'touchstart'){
         
         peekABoo.fastSwipeTimerStart= new Date().getTime();
         
@@ -653,24 +637,9 @@
       }
       
     };
-    peekABoo.dragStartCircular = function(e){
-                
-      if (e.type == 'mousedown'){
-        
-        peekABoo.fastSwipeTimerStart= new Date().getTime();
-        
-        $(document).on('mousemove.swipe', function(e){                    
-          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
-            return;
-          }
-          peekABoo.dragMoveCircular(e);
-        });
-        $(document).on('mouseup.swipe', function(e){        
-          peekABoo.dragEndCircular(e);
-        });
-      }
+    peekABoo.dragStartCircular = function(e){    
 
-      else if (e.type == 'touchstart'){
+      if (e.type == 'touchstart'){
                 
         peekABoo.fastSwipeTimerStart= new Date().getTime();
         
@@ -718,10 +687,6 @@
 
       peekABoo.fastSwipeTimerEnd = new Date().getTime();
 
-      if (e.type == 'mousemove'){
-        dragDistanceX = peekABoo.dragStartMousePosX - peekABoo.getMousePos(e).posx;
-      }
-
       if (e.type == 'touchmove'){
         dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
         peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
@@ -763,10 +728,6 @@
 
       peekABoo.fastSwipeTimerEnd = new Date().getTime();
 
-      if (e.type == 'mousemove'){
-        dragDistanceX = peekABoo.dragStartMousePosX - peekABoo.getMousePos(e).posx;
-      }
-
       if (e.type == 'touchmove'){
         dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
         peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
@@ -798,35 +759,22 @@
     };
       
     peekABoo.dragEnd = function(e){
-
-      $(document).off('mousemove.swipe');
-      $(document).off('mouseup.swipe');
       
       $slideBody.off('touchmove');
       $slideBody.off('touchend');
       
       $slideBody.removeClass('peekaboo-notransition'); 
-
-      if (e.type == 'mouseup'){
-        peekABoo.mouseUpEndX = peekABoo.getMousePos(e).posx;
-      }
 
       peekABoo.swipeSlide();     
 
     };
     peekABoo.dragEndCircular = function(e){
-      $(document).off('mousemove.swipe');
-      $(document).off('mouseup.swipe');
-      
+            
       $slideBody.off('touchmove');
       $slideBody.off('touchend');
       
       $slideBody.removeClass('peekaboo-notransition'); 
-
-      if (e.type == 'mouseup'){
-        peekABoo.mouseUpEndX = peekABoo.getMousePos(e).posx;
-      }
-
+     
       peekABoo.swipeSlide(); 
     }; 
 
