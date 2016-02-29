@@ -824,7 +824,7 @@
 
       peekABoo.endTime = new Date().getTime();
     
-      if (peekABoo.endTime - peekABoo.startTime < 150) {      
+      if (peekABoo.endTime - peekABoo.startTime < 50) {      
         return false;
       }
 
