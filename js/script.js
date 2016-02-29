@@ -622,6 +622,9 @@
         
       if (e.type == 'mousedown'){
         $(document).on('mousemove.swipe', function(e){
+          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
+            return;
+          }
           peekABoo.dragMove(e);
         });
         $(document).on('mouseup.swipe', function(e){        
@@ -632,6 +635,9 @@
       if (e.type == 'touchstart'){
         peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
         $slideBody.on('touchmove', function(e){
+          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
+            return;
+          }
           peekABoo.dragMove(e);
         });
       
@@ -647,6 +653,9 @@
         
       if (e.type == 'mousedown'){
         $(document).on('mousemove.swipe', function(e){
+          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
+            return;
+          }
           peekABoo.dragMoveCircular(e);
         });
         $(document).on('mouseup.swipe', function(e){        
@@ -657,6 +666,9 @@
       if (e.type == 'touchstart'){
         peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
         $slideBody.on('touchmove', function(e){
+          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
+            return;
+          }
           peekABoo.dragMoveCircular(e);
         });
       
