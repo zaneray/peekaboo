@@ -66,24 +66,7 @@
 
         
         // Attach mouse and touch events for swipe / drag   
-        $slideBody.on('touchstart', function(e){      
-
-          peekABoo.startTime = new Date().getTime();                          
-                    
-          if (e.type == 'touchstart'){
-            peekABoo.dragStartMousePosX = e.originalEvent.touches[0].pageX;
-          }
-
-          // For circular slider, we can slide infinitely in either direction
-          if (settings.circularSlider == true){
-            peekABoo.dragStartCircular(e);
-            
-          // For non-circular slide, we have to manage the left and right ends of the gallery and unbind the swipe events
-          } else {
-            peekABoo.dragStart(e);  
-          }        
-
-        });          
+        peekABoo.bindGestures();
         
         
       // don't init much if there is only one image in the gallery
@@ -605,174 +588,79 @@
     
         
     /** 
-     *  Image Grid swipe / touch interactions
+     *  Swipe / touch interactions
      * 
-     * the functions below are used for the mobile / touch interactions with the image grid 
-     * pagination.  
+     * the functions below are used for the mobile / touch interactions 
      */
      
     /* Start logic for swipe */
-    peekABoo.dragStart = function(e){          
-              
-      if (e.type == 'touchstart'){
-        
-        peekABoo.fastSwipeTimerStart= new Date().getTime();
-        
-        peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
-        
-        $slideBody.on('touchmove', function(e){                    
-          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
-            return;
-          }
-          peekABoo.dragMove(e);
-        });
+    
+    peekABoo.bindGestures = function(){
       
-        $slideBody.on('touchend', function(e){        
-          peekABoo.dragEnd(e);
-        });
-      }
-      
-    };
-    peekABoo.dragStartCircular = function(e){    
+      $slideBody.on('touchstart', function(e){      
 
-      if (e.type == 'touchstart'){
-                
-        peekABoo.fastSwipeTimerStart= new Date().getTime();
-        
+        peekABoo.startTime = new Date().getTime(); 
+        peekABoo.dragStartMousePosX = e.originalEvent.touches[0].pageX;
         peekABoo.dragStartMousePosY = e.originalEvent.touches[0].pageY;
-        
-        $slideBody.on('touchmove', function(e){ 
-          if ( $(peekABoo).hasClass('peekaboo-notransition') ){
-            return;
-          }
-          peekABoo.dragMoveCircular(e);
-        });
+                
+        $slideBody.addClass('peekaboo-notransition');                          
+
+      });  
       
-        $slideBody.on('touchend', function(e){        
-          peekABoo.dragEndCircular(e);
-        });
-      }
+      $slideBody.on('touchend', function(e){     
+        $slideBody.removeClass('peekaboo-notransition'); 
+        peekABoo.swipeSlide();     
+      });
       
-    };
-      
-    peekABoo.getMousePos = function(e){
-      var posx,
-          posy;
+      $slideBody.on('touchmove', function(e){                    
           
-      if (!e) var e = window.event;
-      if (e.pageX || e.pageY)   {
-        posx = e.pageX;
-        posy = e.pageY;
-      }
-      else if (e.clientX || e.clientY)  {
-        posx = e.clientX + document.body.scrollLeft
-        + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop
-        + document.documentElement.scrollTop;
-      }
-      return {
-        'posx': posx,
-        'posy': posy
-      };  
-    };
+        if ( $(peekABoo).hasClass('peekaboo-notransition') ){
+          return;
+        }                  
+        peekABoo.dragMove(e);  
+        
+      });
       
+    };     
+          
     peekABoo.dragMove = function(e){
 
-      // remove transition effect 
-      $slideBody.addClass('peekaboo-notransition');
-
-      peekABoo.fastSwipeTimerEnd = new Date().getTime();
-
-      if (e.type == 'touchmove'){
-        dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
-        peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
-
-        dragDistanceY = peekABoo.dragStartMousePosY - e.originalEvent.touches[0].pageY;
-        window.scrollBy(0,dragDistanceY);   
-      }
+      dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
+      peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
 
       // % / pixel
-      var pixelPercentValue = 100 / $slideWindow.width(),
-          moveByPercent = dragDistanceX * pixelPercentValue;
-      
-      if (peekABoo.totalSlideWidthPercent === undefined){
-        peekABoo.totalSlideWidthPercent = 0;
-      }
-
-      // current % position
-      peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent;
-
-      // disable further left
-      if (peekABoo.moveByPercentTotal >= 0){
-        return false;
-      }
-
-      var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal - 200 + '%, 0, 0)';    
-      
-      $slideBody.css({
-        '-webkit-transform': totalSlideTransformPercent,
-        '-ms-transform': totalSlideTransformPercent,
-        'transform': totalSlideTransformPercent
-        }
-      );
-      
-    };
-    
-    peekABoo.dragMoveCircular = function(e){
-      // remove transition effect 
-      $slideBody.addClass('peekaboo-notransition');
-
-      peekABoo.fastSwipeTimerEnd = new Date().getTime();
-
-      if (e.type == 'touchmove'){
-        dragDistanceX = peekABoo.dragStartMousePosX - e.originalEvent.touches[0].pageX;
-        peekABoo.mouseUpEndX = e.originalEvent.touches[0].pageX;
-
-        dragDistanceY = peekABoo.dragStartMousePosY - e.originalEvent.touches[0].pageY;
-        window.scrollBy(0,dragDistanceY);   
-      }
-
-      // % / pixel
-      var pixelPercentValue = 100 / $slideWindow.width(),
-          moveByPercent = dragDistanceX * pixelPercentValue;
-      
-      if (peekABoo.totalSlideWidthPercent === undefined){
-        peekABoo.totalSlideWidthPercent = 0;
-      }
-
-      // current % position
-      peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent - 200;
-      
-      var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal + '%, 0, 0)';            
-      
-      $slideBody.css({
-        '-webkit-transform': totalSlideTransformPercent,
-        '-ms-transform': totalSlideTransformPercent,
-        'transform': totalSlideTransformPercent
-        }
-      );
-      
-    };
-      
-    peekABoo.dragEnd = function(e){
-      
-      $slideBody.off('touchmove');
-      $slideBody.off('touchend');
-      
-      $slideBody.removeClass('peekaboo-notransition'); 
-
-      peekABoo.swipeSlide();     
-
-    };
-    peekABoo.dragEndCircular = function(e){
+      var moveByPercent = ( dragDistanceX / $slideWindow.width() ) * 100;
             
-      $slideBody.off('touchmove');
-      $slideBody.off('touchend');
+      if (peekABoo.totalSlideWidthPercent === undefined){
+        peekABoo.totalSlideWidthPercent = 0;
+      }
+
+      if (settings.circularSlider == true){
+        // current % position
+        peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent - 200;
       
-      $slideBody.removeClass('peekaboo-notransition'); 
-     
-      peekABoo.swipeSlide(); 
-    }; 
+        var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal + '%, 0, 0)';  
+      }
+      else {
+          // current % position
+        peekABoo.moveByPercentTotal = peekABoo.totalSlideWidthPercent * -1 - moveByPercent;
+
+        // disable swiping further left for non-circular
+        if (peekABoo.moveByPercentTotal >= 0){
+          return false;
+        }  
+        
+        var totalSlideTransformPercent = 'translate3d(' + peekABoo.moveByPercentTotal - 200 + '%, 0, 0)';  
+      }       
+      
+      $slideBody.css({
+        '-webkit-transform': totalSlideTransformPercent,
+        '-ms-transform': totalSlideTransformPercent,
+        'transform': totalSlideTransformPercent
+        }
+      );
+      
+    };         
 
     peekABoo.slideToStart = function(){
             
@@ -788,28 +676,27 @@
     };
       
     peekABoo.swipeSlide = function(){
-
-      peekABoo.endTime = new Date().getTime();
-    
-      if (peekABoo.endTime - peekABoo.startTime < 150) {      
-        return false;
+          
+      if (typeof peekABoo.dragStartMousePosX == 'undefined' || 
+          peekABoo.dragStartMousePosX == undefined ||
+          typeof peekABoo.mouseUpEndX == 'undefined' ||
+          peekABoo.mouseUpEndX == undefined ) {
+        return;        
+      }
+      
+      if ( (peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 8){        
+        $pagingGoToNext.trigger('click');        
       }
 
-      if ((peekABoo.dragStartMousePosX - peekABoo.mouseUpEndX) >= 8){
-        $pagingGoToNext.trigger('click');
-        return false;
-      }
-
-      if ((peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 8){
-        $pagingGoToPrev.trigger('click');
-        return false;
+      if ( (peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 8){        
+        $pagingGoToPrev.trigger('click');        
       }
 
       peekABoo.slideToStart();
 
     } ;
     /** 
-     * END - Image Grid swipe / touch interactions 
+     * END - Swipe / touch interactions 
      */
         
     
