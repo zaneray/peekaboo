@@ -660,20 +660,7 @@
         }
       );
       
-    };         
-
-    peekABoo.slideToStart = function(){
-            
-      var totalSlideTransformPercent = 'translate3d(' + peekABoo.totalSlideWidthPercent * -1 - 200 + '%, 0, 0)';    
-
-      $slideBody.css({
-        '-webkit-transform': totalSlideTransformPercent,
-        '-ms-transform': totalSlideTransformPercent,
-        'transform': totalSlideTransformPercent
-        }
-      );      
-
-    };
+    }; 
       
     peekABoo.swipeSlide = function(){
           
@@ -691,8 +678,6 @@
       if ( (peekABoo.mouseUpEndX - peekABoo.dragStartMousePosX) >= 8){        
         $pagingGoToPrev.trigger('click');        
       }
-
-      peekABoo.slideToStart();
 
     } ;
     /** 
