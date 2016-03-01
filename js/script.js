@@ -66,14 +66,10 @@
 
         
         // Attach mouse and touch events for swipe / drag   
-        $slideBody.on('mousedown touchstart', function(e){      
+        $slideBody.on('touchstart', function(e){      
 
-          peekABoo.startTime = new Date().getTime();
-                          
-          if (e.type == 'mousedown'){
-            peekABoo.dragStartMousePosX = peekABoo.getMousePos(e).posx;
-          }
-          
+          peekABoo.startTime = new Date().getTime();                          
+                    
           if (e.type == 'touchstart'){
             peekABoo.dragStartMousePosX = e.originalEvent.touches[0].pageX;
           }
@@ -795,7 +791,7 @@
 
       peekABoo.endTime = new Date().getTime();
     
-      if (peekABoo.endTime - peekABoo.startTime < 50) {      
+      if (peekABoo.endTime - peekABoo.startTime < 150) {      
         return false;
       }
 
